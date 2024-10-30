@@ -1,12 +1,14 @@
 package com.example.gpsmapapp;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -55,25 +57,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Permiso de ubicación necesario")
+                        .setMessage("Esta aplicación necesita acceso a su ubicación para mostrar su posición en el mapa.")
+                        .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(
+                                MainActivity.this,
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                LOCATION_REQUEST_CODE
+                        ))
+                        .setNegativeButton("Cancelar", null)
+                        .create()
+                        .show();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+            }
         } else {
             getCurrentLocation();
         }
     }
+
+
 
     private void getCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        if (location != null) {
-                            LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15));
-                            mMap.addMarker(new MarkerOptions().position(currentLatLng).title("Ubicación Actual"));
-                        }
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15));
+                        mMap.addMarker(new MarkerOptions().position(currentLatLng).title("Ubicación Actual"));
                     }
                 });
     }
@@ -85,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocation();
             } else {
-                Toast.makeText(this, "Acceso a la ubicación denegado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "La aplicación requiere acceso a la ubicación para funcionar.", Toast.LENGTH_LONG).show();
             }
         }
     }
