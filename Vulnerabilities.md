@@ -17,3 +17,10 @@
 - **Severidad**: Advertencia
 - **Descripción**: La opción allowBackup está habilitada, permitiendo que usuarios con depuración habilitada copien datos.
 - **Recomendación**: Configurar android:allowBackup="false" en el archivo AndroidManifest.xml:
+
+
+## 5. Exposición de Información Sensible a Través de Permisos
+- **Severidad**: Alta
+- **Descripción**: La aplicación solicita permisos sensibles como ACCESS_FINE_LOCATION y ACCESS_COARSE_LOCATION, lo que puede ser utilizado por aplicaciones maliciosas para rastrear la ubicación del usuario sin su consentimiento.
+- **Recomendación**: Evaluar la necesidad de estos permisos y utilizar métodos alternativos de localización o establecer un mecanismo de consentimiento claro y explícito para los usuarios.
+
